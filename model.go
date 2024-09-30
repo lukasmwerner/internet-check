@@ -23,7 +23,7 @@ type failureMsg struct {
 }
 
 type model struct {
-	hosts    []string
+	hosts    []Entry
 	finished []bool
 	success  []bool
 	errors   []string
@@ -66,18 +66,18 @@ func (m model) View() string {
 	render := ""
 	for i, host := range m.hosts {
 		if !m.finished[i] {
-			render += fmt.Sprintf(" %s %s\n", m.spinner.View(), host)
+			render += fmt.Sprintf(" %s %s\n", m.spinner.View(), host.Host)
 		} else if m.success[i] {
-			render += fmt.Sprintf("  %s  %s\n", checkMark.String(), host)
+			render += fmt.Sprintf("  %s  %s\n", checkMark.String(), host.Host)
 		} else {
-			render += fmt.Sprintf("  %s  %s: %s\n", xMark.String(), host, m.errors[i])
+			render += fmt.Sprintf("  %s  %s: %s\n", xMark.String(), host.Host, m.errors[i])
 		}
 	}
 
 	return header + render
 }
 
-func initalModel(hosts []string) model {
+func initalModel(hosts []Entry) model {
 
 	m := model{
 		hosts:    hosts,

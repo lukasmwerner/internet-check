@@ -12,6 +12,11 @@ import (
 	"github.com/lukasmwerner/internet-check/tester"
 )
 
+type Entry struct {
+	Host       string
+	StatusCode int
+}
+
 func main() {
 
 	home, err := os.UserHomeDir()
@@ -22,7 +27,7 @@ func main() {
 
 	configFilePath := path.Join(home, ".config", "internet-check", "hosts.json")
 
-	hosts := []string{}
+	hosts := []Entry{}
 
 	b, err := os.ReadFile(configFilePath)
 	if err != nil {
@@ -48,19 +53,19 @@ func main() {
 		statuses := make(chan Status)
 		for i, host := range hosts {
 			wg.Add(1)
-			go func(idx int) {
-				ok, err := tester.TestHTTPConnection(host)
+			go func(idx int, host Entry) {
+				ok, err := tester.TestHTTPConnection(host.Host, host.StatusCode)
 				statuses <- Status{
 					Index: idx,
 					Error: err,
 					Ok:    ok,
 				}
 				wg.Done()
-			}(i)
+			}(i, host)
 
 		}
 
-		go func () {
+		go func() {
 			wg.Wait()
 			close(statuses)
 		}()
